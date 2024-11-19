@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caza de Corazones Elevados</title>
+  <style>
+    /* Estilos generales */
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: linear-gradient(45deg, #ff6b6b, #ffe6e6);
+      font-family: 'Dancing Script', cursive;
+    }
+
+    .heart {
+      position: absolute;
+      color: #ff4c4c;
+      font-size: 3rem;
+      user-select: none;
+      cursor: pointer;
+      animation: floatUp 4s linear forwards;
+    }
+
+    .heart:hover {
+      transform: scale(1.3);
+    }
+
+    @keyframes floatUp {
+      0% {
+        bottom: -10%;
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      100% {
+        bottom: 110%;
+        opacity: 0;
+      }
+    }
+
+    .score-container {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      font-size: 1.5rem;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 10px 20px;
+      border-radius: 10px;
+    }
+
+    .message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2rem;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      display: none;
+      animation: fadeIn 1s ease-in-out;
+      text-align: center;
+    }
+
+    .restart-btn {
+      display: none;
+      position: absolute;
+      top: 70%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #ff4c4c;
+      color: white;
+      border: none;
+      border-radius: 15px;
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .restart-btn:hover {
+      transform: scale(1.1);
+      background-color: #ff6b6b;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="score-container">Puntos: <span id="score">0</span></div>
+  <div id="message" class="message"></div>
+  <button id="restartBtn" class="restart-btn">Reiniciar Juego</button>
+
+  <script>
+    // Configuración
+    const emojis = ["❤️"];
+    const messages = [
+      "¡Eres la dueña de mi corazón! 💖",
+      "¡Nuestro amor sube como estos corazones! 💕",
+      "¡Gracias por llenar mi vida de felicidad! 🌟",
+      "¡Tú eres mi razón de sonreír! 😊",
+      "Gracias por tantas sonrisas e incluso coleras :3",
+      "Cada corazón que atrapas es un latido más de amor por ti.",
+      "Mi corazón late más rápido cada vez que te veo.",
+      "Eres la razón por la que sonrío todos los días.",
+      "El amor que siento por ti no tiene fin.",
+      "Cada momento contigo es un regalo que atesoro.",
+      "La vida contigo es un viaje maravilloso lleno de amor.",
+      "Te amo más de lo que las palabras pueden expresar.",
+      "El amor verdadero es capturado en cada latido de mi corazón.",
+      "Tu amor me hace sentir completo/a.",
+      "No hay nada que me haga más feliz que verte sonreír.",
+      "Eres mi refugio, mi paz y mi felicidad.",
+      "La magia del amor es lo que hace que todo valga la pena.",
+      "Te adoro más que todas las estrellas en el cielo.",
+      "Cada segundo contigo es un sueño hecho realidad.",
+      "Tus abrazos son mi lugar favorito en el mundo.",
+      "Si el amor fuera un juego, yo ganaría todos los días contigo.",
+      "El amor es un lenguaje que solo tú y yo entendemos.",
+      "El mejor momento de mi vida es cuando estoy contigo.",
+      "No hay meta más dulce que amarte cada día más.",
+      "Nuestro amor es como los corazones que atrapamos, siempre creciendo.",
+    ];
+    const gameDuration = 3000000000000; // Tiempo por nivel
+    let targetScore = 20; // Puntaje objetivo inicial
+    let score = 0;
+    let currentLevel = 1;
+    let gameInterval;
+
+    const messageElement = document.getElementById("message");
+    const restartButton = document.getElementById("restartBtn");
+
+    // Crear corazones al azar
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      heart.className = "heart";
+
+      // Posición horizontal aleatoria
+      heart.style.left = Math.random() * 100 + "vw";
+
+      // Empieza en la parte inferior de la pantalla
+      heart.style.bottom = "0";
+
+      // Tamaño intermedio aleatorio
+      const size = Math.random() * 1.5 + 2;
+      heart.style.fontSize = size + "rem";
+
+      // Agregar funcionalidad al hacer clic
+      heart.addEventListener("click", () => {
+        score++;
+        document.getElementById("score").textContent = score;
+        heart.remove();
+
+        // Verificar si se alcanza la meta
+        if (score >= targetScore) {
+          endLevel();
+        }
+      });
+
+      document.body.appendChild(heart);
+
+      // Eliminar corazón después de la animación
+      setTimeout(() => heart.remove(), 4000);
+    }
+
+    // Mostrar mensaje romántico
+    function showRomanticMessage() {
+      const message = messages[currentLevel - 1] || "¡El amor no tiene límites! 💘";
+      messageElement.textContent = message;
+      messageElement.style.display = "block";
+
+      setTimeout(() => {
+        messageElement.style.display = "none";
+        startLevel();
+      }, 3000);
+    }
+
+    // Finalizar nivel actual
+    function endLevel() {
+      clearInterval(gameInterval);
+      document.querySelectorAll(".heart").forEach(heart => heart.remove());
+      currentLevel++;
+      targetScore *= 2; // Duplicar el puntaje objetivo
+      showRomanticMessage();
+    }
+
+    // Iniciar un nuevo nivel
+    function startLevel() {
+      score = 0;
+      document.getElementById("score").textContent = score;
+      gameInterval = setInterval(createHeart, 500);
+
+      // Terminar el nivel después del tiempo extendido
+      setTimeout(() => {
+        if (score < targetScore) {
+          endGame(false);
+        }
+      }, gameDuration);
+    }
+
+    // Finalizar el juego
+    function endGame(won) {
+      clearInterval(gameInterval);
+      document.querySelectorAll(".heart").forEach(heart => heart.remove());
+      messageElement.textContent = won ? "¡Felicidades! ❤️" : "¡Se acabó el tiempo! 💔";
+      messageElement.style.display = "block";
+      restartButton.style.display = "block";
+    }
+
+    // Reiniciar el juego
+    function resetGame() {
+      score = 0;
+      currentLevel = 1;
+      targetScore = 20;
+      document.getElementById("score").textContent = score;
+      messageElement.style.display = "none";
+      restartButton.style.display = "none";
+      startLevel();
+    }
+
+    // Agregar evento al botón de reinicio
+    restartButton.addEventListener("click", resetGame);
+
+    // Iniciar el juego automáticamente al cargar
+    window.onload = startLevel;
+  </script>
+</body>
+</html>
